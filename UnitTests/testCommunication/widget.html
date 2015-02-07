@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Communication Widget</title>
+    <script src="../../componentSrc/topicdefs.js"></script>    
+    <script src="../../componentSrc/componentProtocol.js"></script>
+</head>
+<body>
+<script>
+    wapi.subscribe("broadcast", function (msg) {
+        //window.console.log("Received: " + document.URL + " 'broadcast'");
+        wapi.publish("ack", msg);
+    });
+
+    wapi.subscribe("echo", function (msg) {
+          //window.console.log(document.URL + " echo");
+        wapi.publish("echo", msg);
+    });
+</script>
+
+
+</body>
+</html>

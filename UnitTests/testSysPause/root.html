@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+    <title>Pause Test</title>
+    <!-- widget communication code -->
+    <script src="../../componentSrc/topicdefs.js"></script>    
+    <script src="../../componentSrc/componentProtocol.js"></script>
+    <script src="../../node_modules/closure-library/closure/goog/base.js"></script>
+    <script>
+        goog.require('goog.Promise');
+        goog.require('goog.Thenable');
+        goog.require('goog.functions');
+        goog.require('goog.testing.AsyncTestCase');
+        goog.require('goog.testing.PropertyReplacer');
+        goog.require('goog.testing.jsunit');
+        goog.require('goog.testing.recordFunction');
+    </script>
+
+    <link href="../css/status.css" type="text/css" rel="stylesheet">
+    <style>
+
+        iframe {
+            width: 300px;
+            height: 150px;
+        }
+
+        .method {
+            border: 2px solid black;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+<div id="source">src</div>
+<div id="status">No status</div>
+
+<iframe id='one' src="widget1.htm"></iframe>
+<iframe id='two' src="widget2.htm"></iframe>
+<script>
+    window.console.log(document.URL);
+
+    /* this specifies what is the root of the widget hierarchy,
+     * since this will run (sometimes) in the all_tests.html
+     * we need to indicate that this is the top of the widget hierarchy
+     */
+    window.widgetRoot = true;
+
+
+    var iframeWindow1 = document.getElementById('one');
+    var iframeWindow2 = document.getElementById('two');
+    var counter1;
+    var lastCounter1;
+    var counter2;
+    var lastCounter2;
+    var paused1 = false;
+    var paused2 = false;
+    var done = 0;
+
+    window.reinitializeTest = function () {
+        counter1 = undefined;
+        lastCounter1 = undefined;
+        counter2 = undefined;
+        lastCounter2 = undefined;
+        paused1 = false;
+        paused2 = false;
+        done = 0;
+    };
+
+
+    wapi.subscribe("ack1", function (msg) {
+        counter1 = parseInt(msg);
+        window.console.log("ACK1: done: " + done + " paused: " + paused1 + " msg: " + msg);
+
+        if (paused1)
+        {
+            if (done++ > 0)
+            {
+                window.console.log("ACK1: " + lastCounter1 + ", " + counter1);
+                assertEquals(lastCounter1, counter1);
+                if (done > 10)
+                {
+                    paused1 = false;
+                    wapi.send(iframeWindow1.contentWindow, topicResume_, "resume");
+
+                    wapi.send(iframeWindow2.contentWindow, topicPause_, "pause");
+                    paused2 = true;
+                    done = 0;
+                }
+            }
+            else
+            {
+                lastCounter1 = counter1;
+            }
+        }
+        else
+        {
+            lastCounter1 = counter1;
+        }
+    });
+
+    wapi.subscribe("ack2", function (msg) {
+        counter2 = parseInt(msg);
+        window.console.log("ACK2: done: " + done + " paused: " + paused2 + " msg: " + msg);
+
+        if (paused2)
+        {
+            if (done++ > 0)
+            {
+                window.console.log("ACK2: " + lastCounter2 + ", " + counter2);
+                assertEquals(lastCounter2, counter2);
+                if (done > 10)
+                {
+                    wapi.send(iframeWindow2.contentWindow, topicResume_, "resume");
+                    paused2 = false;
+                    completedTest();
+                    done = 0;
+                }
+            }
+            else
+            {
+                lastCounter2 = counter2;
+            }
+        }
+        else if (lastCounter2)
+        {
+            window.console.log("ACK2: " + (lastCounter2 + 50) + ", " + counter2);
+            assertEquals(lastCounter2 + 50, counter2);
+            lastCounter2 = counter2;
+
+        }
+        else
+        {
+            lastCounter2 = counter2;
+        }
+    });
+
+
+    function startTest() {
+        wapi.send(iframeWindow1.contentWindow, topicPause_, "pause");
+        paused1 = true;
+    }
+
+
+</script>
+<script src="../harness/asyncTestHarness.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+    function generateUUID_() {
+        var d = new Date().getTime();
+        var template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+        return template.replace(/[xy]/g, function (c) {
+            var r = (d + Math.random() * 16) % 16 | 0;
+            //d = Math.floor(d / 16);
+            return (c == "x" ? r : (r & 0x7 | 0x8)).toString(16);
+        });
+    }
+
+    var uuids = [];
+    var limit = 100000;
+
+    for (var i = 0; i < limit; i++)
+    {
+        uuids[i] = generateUUID_();
+    }
+
+    uuids.sort();
+
+    for (var j = 0; j < (limit - 1); j++)
+    {
+        if (uuids[j] == uuids[j+1])
+        {
+            alert("dups");
+        }
+
+    }
+
+    alert('done');
+</script>
+</body>
+</html>

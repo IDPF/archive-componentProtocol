@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Communication Widget</title>
+    <script src="../../componentSrc/topicdefs.js"></script>    
+    <script src="../../componentSrc/componentProtocol.js"></script>
+</head>
+<body>
+<script>
+   var strings = document.URL.split('?');
+   var number = strings[1];
+
+   window.console.log(document.URL);
+
+
+    wapi.subscribe("message", function (msg) {
+        window.console.log(document.URL + " - received: message");
+        wapi.publish("messageAck", msg + number);
+    });
+
+    wapi.subscribe("broadcast" + number, function (msg) {
+        window.console.log(document.URL + " - received: broadcast" + number);
+        wapi.publish("ack" + number, msg + number);
+    });
+
+    wapi.subscribe("echo" + number, function (msg) {
+         window.console.log(document.URL + " - received: echo" + number);
+        wapi.publish("echo" + number, msg + number);
+    });
+</script>
+
+
+</body>
+</html>

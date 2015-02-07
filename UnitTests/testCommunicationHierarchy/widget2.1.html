@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Child Widget</title>
+    <script src="../../componentSrc/topicdefs.js"></script>    
+    <script src="../../componentSrc/componentProtocol.js"></script>
+    <script src="../../node_modules/closure-library/closure/goog/base.js"></script>
+</head>
+<body>
+<script>
+    wapi.subscribe("broadcast0", function (msg) {
+        window.console.log(document.URL + "   " + goog.now() + "  received broadcast0");	    
+        wapi.publish("ack0", document.URL);
+    });
+
+    wapi.subscribe("broadcast1", function (msg) {
+        window.console.log(document.URL + "   " + goog.now() + "  received broadcast1");	    
+        wapi.publish("ack1", document.URL);
+    });
+
+</script>
+
+
+</body>
+</html>

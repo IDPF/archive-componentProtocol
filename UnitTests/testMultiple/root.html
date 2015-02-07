@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple Test</title>
+    <script src="../../componentSrc/topicdefs.js"></script>    
+    <script src="../../componentSrc/componentProtocol.js"></script>
+    <script src="../../node_modules/closure-library/closure/goog/base.js"></script>
+    <script>
+        goog.require('goog.Promise');
+        goog.require('goog.Thenable');
+        goog.require('goog.functions');
+        goog.require('goog.testing.AsyncTestCase');
+        goog.require('goog.testing.PropertyReplacer');
+        goog.require('goog.testing.jsunit');
+        goog.require('goog.testing.recordFunction');
+    </script>
+</head>
+<body>
+<iframe id="one" src="http://one.cr:8080/UnitTests/testMultiple/widget.html?0"></iframe>
+<iframe id="two" src="http://two.cr:8080/UnitTests/testMultiple/widget.html?1"></iframe>
+<iframe id="three" src="http://thr.cr:8080/UnitTests/testMultiple/widget.html?2"></iframe>
+
+
+<script>
+    /* this specifies what is the root of the widget hierarchy,
+     * since this will run (sometimes) in the all_tests.html
+     * we need to indicate that this is the top of the widget hierarchy
+     */
+    window.widgetRoot = true;
+
+    var childLoaded = 0;
+    var testBroadcast = "broadcast " + document.URL + " ";
+    var testEcho = "echo " + document.URL + " ";
+      var testMessageAck = "messageAck " + document.URL + " ";
+    var echoReceived0 = 0;
+    var ackReceived0 = 0;
+    var echoReceived1 = 0;
+    var ackReceived1 = 0;
+    var echoReceived2 = 0;
+    var ackReceived2 = 0;
+    var messageAck = 0;
+
+
+    wapi.subscribe(topicReady_, function (msg) {
+        childLoaded++;
+    });
+
+    function startTest() {
+	    echoReceived0 = 0;
+	    ackReceived0 = 0;
+	    echoReceived1 = 0;
+	    ackReceived1 = 0;
+	    echoReceived2 = 0;
+	    ackReceived2 = 0;
+        messageAck = 0;
+
+        var intervalId = window.setInterval(function () {
+            if (childLoaded == 3)
+            {
+                window.console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                wapi.publish("broadcast0", testBroadcast);
+                wapi.publish("echo0", testEcho);
+                wapi.publish("broadcast1", testBroadcast);
+                wapi.publish("echo1", testEcho);
+                wapi.publish("broadcast2", testBroadcast);
+                wapi.publish("echo2", testEcho);
+                wapi.publish("message", testMessageAck)
+                window.clearInterval(intervalId);
+            }
+        }, 50);
+    }
+
+
+    wapi.subscribe("echo0", function (msg) {
+        window.console.log("echo0 received: " + msg);
+        echoReceived0++;
+        assertEquals(msg, testEcho + "0");
+    });
+
+    wapi.subscribe("ack0", function (msg) {
+        window.console.log("ack0 received: " + msg);
+        ackReceived0++;
+        assertEquals(msg, testBroadcast + "0");
+    });
+
+    wapi.subscribe("echo1", function (msg) {
+        window.console.log("echo1 received: " + msg);
+        echoReceived1++;
+        assertEquals(msg, testEcho + "1");
+    });
+
+    wapi.subscribe("ack1", function (msg) {
+        window.console.log("ack1 received: " + msg);
+        ackReceived1++;
+        assertEquals(msg, testBroadcast + "1");
+    });
+
+
+    wapi.subscribe("echo2", function (msg) {
+        window.console.log("echo2 received: " + msg);
+        window.console.log('echo2 received: "' + msg + '" "' + testEcho + "2" + '"');		
+        echoReceived2++;
+        assertEquals(msg, testEcho + "2");
+    });
+
+    wapi.subscribe("ack2", function (msg) {
+        window.console.log("ack2 received: " + msg);
+        ackReceived2++;
+        assertEquals(msg, testBroadcast + "2");
+    });
+
+      wapi.subscribe("messageAck", function (msg) {
+        window.console.log("!!!!!!!!!!!!!!! messageAck received: " + msg);
+        messageAck++;
+    });
+
+
+    var intervalID2 = window.setInterval(function () {
+        window.console.log("===== " + ackReceived0 + ", " + echoReceived0 + "  "
+						   + ackReceived1 + ", " + echoReceived1 + "  "
+						   + ackReceived2 + ", " + echoReceived2);
+		
+        if (ackReceived0 == 1 && echoReceived0 == 1 &&
+			  ackReceived1 == 1 && echoReceived1 == 1 &&
+			  ackReceived2 == 1 && echoReceived2 == 1 &&
+        messageAck > 2)
+        {
+            window.clearInterval(intervalID2);
+            assertEquals(1, ackReceived0);
+            assertEquals(1, echoReceived0);
+            assertEquals(1, ackReceived1);
+            assertEquals(1, echoReceived1);
+            assertEquals(1, ackReceived2);
+            assertEquals(1, echoReceived2);
+            window.console.log("--------------------");
+             assertEquals(3, messageAck);
+            completedTest();
+        }
+
+    }, 50);
+</script>
+<script src="../harness/asyncTestHarness.js"></script>
+</body>
+</html>
