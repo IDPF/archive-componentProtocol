@@ -37,9 +37,10 @@
     var eventButton = document.getElementById("event");
 
     eventButton.addEventListener("click", function (e) {
+		e.stopPropagation()
         var doc = document.URL.slice(document.URL.lastIndexOf("/") + 1);
         var id = psowapi.widgetID.slice(psowapi.widgetID.lastIndexOf("-") + 1);
-        psowapi.publish("click", "click:" + eventCounter++ + " - " + doc + " - " + id);
+        //psowapi.publish("click", "click:" + eventCounter++ + " - " + doc + " - " + id);
     }, true);
 
 

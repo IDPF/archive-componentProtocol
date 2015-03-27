@@ -70,6 +70,7 @@
     var running = true;
 
     pause.addEventListener("click", function (e) {
+		e.stopPropagation()
         if (running === true)
         {
             psowapi.publish("sysPause", "pause");
@@ -87,6 +88,7 @@
     var push = document.getElementById("push");
 
     push.addEventListener("click", function (e) {
+		e.stopPropagation()
         psowapi.publish("data", "<b style='color:red;'>" + new Date() + "</b>");
     }, false);
 

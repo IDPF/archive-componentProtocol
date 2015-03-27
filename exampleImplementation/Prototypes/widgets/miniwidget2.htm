@@ -43,6 +43,7 @@
     var subscribed = true;
     var button = document.getElementById("unsubscribe");
     button.addEventListener("click", function (e) {
+		e.stopPropagation()
         if (subscribed === true)
         {
             subscribed = false;

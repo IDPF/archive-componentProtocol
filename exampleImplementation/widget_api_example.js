@@ -168,17 +168,25 @@ var psowapi = (function($){
     			target.postMessage(payload, "*")
 			}
 
-			// also list the subscription in the subscriptions object
-			// to be referenced on receipt to fire the handler
-		    // todo - should allow multiple handlers
+			// attach the handler here to be fired on receipt of the message
 		    if(topic instanceof Array){
 		        for(var key in topic){
 		            var Topic = topic[key]
-    			    psowapi.subscriptions[Topic] = handler
+		            pushSub(Topic, handler)
 		        }
     		}
     		else {
-			    psowapi.subscriptions[topic] = handler
+	            pushSub(topic, handler)
+    		}
+    		
+    		function pushSub(topic, handler){
+    		    if(psowapi.subscriptions[topic] && psowapi.subscriptions[topic].handlers){
+    		        psowapi.subscriptions[topic].handlers.push(handler)
+    		    } else {
+    			    psowapi.subscriptions[topic] = {}
+    			    psowapi.subscriptions[topic].handlers = []
+    			    psowapi.subscriptions[topic].handlers.push(handler)
+    		    }
     		}
 		},
 
@@ -200,8 +208,13 @@ var psowapi = (function($){
             }
 
 			target.postMessage(payload, "*")
-			// todo - multiple handlers, remove only the right one
-			delete psowapi.subscriptions[topic]
+
+			for(var key in psowapi.subscriptions[topic].handlers){
+			    var Handler = psowapi.subscriptions[topic].handlers[key]
+			    if(Handler == handler){
+        			delete psowapi.subscriptions[topic].handlers[key]
+			    }
+			}
 		},
 
 		publish : function(topic, message){
@@ -406,7 +419,12 @@ var psowapi = (function($){
 		    }
 
 			// fire off the local handler here
-			if(psowapi.subscriptions[topic]) psowapi.subscriptions[topic](e)
+			if(psowapi.subscriptions[topic]){
+			    for(var key in psowapi.subscriptions[topic].handlers){
+			        var Handler = psowapi.subscriptions[topic].handlers[key]
+			        Handler(e)
+			    }
+    		} 
 
 			// it should also be re-broadcast here to all other subscribers
 			// if it's parent isn't subscribed, you should always broadcast to the parent
