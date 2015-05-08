@@ -1,4 +1,7 @@
 
+# WARNING
+This repository is no longer under active development. Please refer to https://github.com/IDPF/scriptable-components for the latest development work on EPUB Scriptable Components.
+
 # IDPF ePub Scripted Components Protocol
 
 This open source framework is a collection of interactive widgets (scripted components) based
